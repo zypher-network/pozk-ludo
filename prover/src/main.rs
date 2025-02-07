@@ -13,8 +13,8 @@ use rand_core::SeedableRng;
 
 mod input;
 
-//const PK_BYTES: &[u8] = include_bytes!("../../../materials/prover_key.bin");
- const PK_BYTES: &[u8] = include_bytes!("../../materials/prover_key.bin");
+const PK_BYTES: &[u8] = include_bytes!("../../../materials/prover_key.bin");
+// const PK_BYTES: &[u8] = include_bytes!("../../materials/prover_key.bin");
 
 #[tokio::main]
 async fn main() {
