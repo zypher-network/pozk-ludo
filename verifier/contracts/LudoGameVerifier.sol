@@ -58,7 +58,7 @@ contract LudoGameVerifier is Initializable, OwnableUpgradeable, ERC165, IVerifie
     /// show how to serialize/deseriaze the inputs params
     /// e.g. "uint256,bytes32,string,bytes32[],address[],ipfs"
     function inputs() external pure returns (string memory) {
-        return "uint256[][]";
+        return "uint256[3][]";
     }
 
     /// show how to serialize/deserialize the publics params
