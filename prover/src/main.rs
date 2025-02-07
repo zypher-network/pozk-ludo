@@ -13,26 +13,29 @@ use rand_core::SeedableRng;
 
 mod input;
 
-const PK_BYTES: &[u8] = include_bytes!("../../../materials/prover_key.bin");
-// const PK_BYTES: &[u8] = include_bytes!("../../materials/prover_key.bin");
+//const PK_BYTES: &[u8] = include_bytes!("../../../materials/prover_key.bin");
+ const PK_BYTES: &[u8] = include_bytes!("../../materials/prover_key.bin");
 
 #[tokio::main]
 async fn main() {
-    let input_path = std::env::var("INPUT").expect("env INPUT missing");
-    let bytes = reqwest::get(&input_path)
-        .await
-        .unwrap()
-        .bytes()
-        .await
-        .unwrap();
+   // let input_path = std::env::var("INPUT").expect("env INPUT missing");
+    // let bytes = reqwest::get(&input_path)
+    //     .await
+    //     .unwrap()
+    //     .bytes()
+    //     .await
+    //     .unwrap();
 
-    // parse inputs and publics
-    let mut input_len_bytes = [0u8; 4];
-    input_len_bytes.copy_from_slice(&bytes[0..4]);
-    let input_len = u32::from_be_bytes(input_len_bytes) as usize;
+    // // parse inputs and publics
+    // let mut input_len_bytes = [0u8; 4];
+    // input_len_bytes.copy_from_slice(&bytes[0..4]);
+    // let input_len = u32::from_be_bytes(input_len_bytes) as usize;
 
-    let input_bytes = &bytes[4..input_len + 4];
-    let publics_bytes = &bytes[input_len + 4..];
+    // let input_bytes = &bytes[4..input_len + 4];
+    // let publics_bytes = &bytes[input_len + 4..];
+
+    let input_bytes = &[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
+    let publics_bytes = &[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 49, 0, 8, 106, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 49, 0, 8, 106, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
     let inputs = decode_prove_inputs(input_bytes).expect("Unable to decode inputs");
     let inputs = inputs
@@ -58,8 +61,9 @@ async fn main() {
     }
 
     let bytes = multiple_proofs_to_abi_bytes(&proofs).unwrap();
-    let client = reqwest::Client::new();
-    client.post(&input_path).body(bytes).send().await.unwrap();
+    println!("OKOK");
+    // let client = reqwest::Client::new();
+    // client.post(&input_path).body(bytes).send().await.unwrap();
 }
 
 pub fn multiple_proofs_to_abi_bytes(proofs: &[Proof<Bn254>]) -> Result<Vec<u8>, anyhow::Error> {
@@ -119,6 +123,9 @@ mod tests {
         pi_token.push(Token::Uint(U256::from_big_endian(&Fr::ONE.into_bigint().to_bytes_be()))); 
         pi_token.push(Token::Uint(U256::from_big_endian(&Fr::from_str("1092739377885103454644040430160177557655257088").unwrap().into_bigint().to_bytes_be())));
         let pi_bytes = ethabi::encode(&[Token::Array(vec![Token::FixedArray(pi_token.clone()),Token::FixedArray(pi_token)])]);
+       
+       println!("{:?}",input_bytes);
+       println!("{:?}",pi_bytes);
 
         let inputs = decode_prove_inputs(&input_bytes).expect("Unable to decode inputs");
         let inputs = inputs
