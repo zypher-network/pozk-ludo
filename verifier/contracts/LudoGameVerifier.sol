@@ -7,8 +7,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import "./IVerifier.sol";
 
-//contract LudoGameVerifier is Initializable, OwnableUpgradeable, ERC165, IVerifier {
-contract LudoGameVerifier is Initializable, OwnableUpgradeable, ERC165 {
+contract LudoGameVerifier is Initializable, OwnableUpgradeable, ERC165, IVerifier {
     // Scalar field size
     uint256 constant r = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
     // Base field size
@@ -44,8 +43,59 @@ contract LudoGameVerifier is Initializable, OwnableUpgradeable, ERC165 {
     uint16 constant pPairing = 128;
     uint16 constant pLastMem = 896;
 
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165) returns (bool) {
+        return interfaceId == type(IVerifier).interfaceId || super.supportsInterface(interfaceId);
+    }
+
+    function name() external pure returns (string memory) {
+        return "ludo";
+    }
+
+    function permission(address _sender) external view returns (bool) {
+        return true;
+    }
+
+    /// show how to serialize/deseriaze the inputs params
+    /// e.g. "uint256,bytes32,string,bytes32[],address[],ipfs"
+    function inputs() external pure returns (string memory) {
+        return "uint256[][]";
+    }
+
+    /// show how to serialize/deserialize the publics params
+    /// e.g. "uint256,bytes32,string,bytes32[],address[],ipfs"
+    function publics() external pure returns (string memory) {
+        return "uint256[2][]";
+    }
+
+    function types() external pure returns (string memory) {
+        return "zk";
+    }
+
+    struct Proof {
+        uint[2] _pA;
+        uint[2][2] _pB;
+        uint[2] _pC;
+    }
+
+    function verify(bytes calldata _publics, bytes calldata _proof) external view returns (bool) {
+        uint[2][] memory mPublics = abi.decode(_publics, (uint[2][]));
+        Proof[] memory mProofs = abi.decode(_proof, (Proof[]));
+        for (uint i = 0; i < mPublics.length; i++) {
+            bool res = this.verifyProof(mProofs[i]._pA, mProofs[i]._pB, mProofs[i]._pC, mPublics[i]);
+            if (!res) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     // _proof = [A, B ,C]
-    function verifyProof(uint256[8] calldata _proof, uint256[2] calldata _pubSignals) public view returns (bool) {
+    function verifyProof(
+        uint[2] calldata _pA,
+        uint[2][2] calldata _pB,
+        uint[2] calldata _pC,
+        uint256[2] calldata _pubSignals
+    ) public view returns (bool) {
         assembly {
             function checkField(v) {
                 if iszero(lt(v, q)) {
@@ -80,7 +130,7 @@ contract LudoGameVerifier is Initializable, OwnableUpgradeable, ERC165 {
                 }
             }
 
-            function checkPairing(proof, pubSignals, pMem) -> isOk {
+            function checkPairing(pA, pB, pC, pubSignals, pMem) -> isOk {
                 let _pPairing := add(pMem, pPairing)
                 let _pVk := add(pMem, pVk)
 
@@ -94,14 +144,14 @@ contract LudoGameVerifier is Initializable, OwnableUpgradeable, ERC165 {
                 g1_mulAccC(_pVk, IC2x, IC2y, calldataload(add(pubSignals, 32)))
 
                 // -A
-                mstore(_pPairing, calldataload(proof))
-                mstore(add(_pPairing, 32), mod(sub(q, calldataload(add(proof, 32))), q))
+                mstore(_pPairing, calldataload(pA))
+                mstore(add(_pPairing, 32), mod(sub(q, calldataload(add(pA, 32))), q))
 
                 // B
-                mstore(add(_pPairing, 64), calldataload(add(proof, 64)))
-                mstore(add(_pPairing, 96), calldataload(add(proof, 96)))
-                mstore(add(_pPairing, 128), calldataload(add(proof, 128)))
-                mstore(add(_pPairing, 160), calldataload(add(proof, 160)))
+                mstore(add(_pPairing, 64), calldataload(pB))
+                mstore(add(_pPairing, 96), calldataload(add(pB, 32)))
+                mstore(add(_pPairing, 128), calldataload(add(pB, 64)))
+                mstore(add(_pPairing, 160), calldataload(add(pB, 96)))
 
                 // alpha1
                 mstore(add(_pPairing, 192), alphax)
@@ -124,8 +174,8 @@ contract LudoGameVerifier is Initializable, OwnableUpgradeable, ERC165 {
                 mstore(add(_pPairing, 544), gammay2)
 
                 // C
-                mstore(add(_pPairing, 576), calldataload(add(proof, 192)))
-                mstore(add(_pPairing, 608), calldataload(add(proof, 224)))
+                mstore(add(_pPairing, 576), calldataload(pC))
+                mstore(add(_pPairing, 608), calldataload(add(pC, 32)))
 
                 // delta2
                 mstore(add(_pPairing, 640), deltax1)
@@ -148,7 +198,7 @@ contract LudoGameVerifier is Initializable, OwnableUpgradeable, ERC165 {
             checkField(calldataload(add(_pubSignals, 32)))
 
             // Validate all evaluations
-            let isValid := checkPairing(_proof, _pubSignals, pMem)
+            let isValid := checkPairing(_pA, _pB, _pC, _pubSignals, pMem)
 
             mstore(0, isValid)
             return(0, 0x20)
