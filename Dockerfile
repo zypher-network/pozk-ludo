@@ -6,7 +6,8 @@ RUN update-ca-certificates
 ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
 
 WORKDIR /prover
-COPY --from=base /data/* ./materials/
+COPY --from=base /data/prover_key.bin ./materials/
+COPY --from=base /data/ludo ./materials/ludo
 
 RUN git clone https://github.com/zypher-network/pozk-ludo.git && cd pozk-ludo/prover && cargo update && cargo build --release && mv /prover/pozk-ludo/prover/target/release/prover /prover/
 

@@ -108,8 +108,7 @@ mod tests {
     use std::{str::FromStr, time::Instant};
 
     use crate::{
-        input::{decode_multiple_prove_publics, decode_prove_inputs},
-        PK_BYTES,
+        input::{decode_multiple_prove_publics, decode_prove_inputs}, multiple_proofs_to_abi_bytes, PK_BYTES
     };
 
     #[tokio::test]
@@ -140,7 +139,7 @@ mod tests {
 
         let mut rng = ChaChaRng::from_entropy();
         let pk = ProvingKey::<Bn254>::deserialize_uncompressed_unchecked(PK_BYTES).unwrap();
-
+        let mut proofs = vec![];
         for (input, pi) in inputs.into_iter().zip(publics.iter()) {
             let start_time = Instant::now();
             let proof = Groth16::<Bn254>::prove(&pk, input, &mut rng).unwrap();
@@ -149,6 +148,13 @@ mod tests {
 
             let pvk = Groth16::<Bn254>::process_vk(&pk.vk).unwrap();
             assert!(Groth16::<Bn254>::verify_with_processed_vk(&pvk, pi, &proof).unwrap());
+
+            proofs.push(proof);
         }
+
+        let bytes = multiple_proofs_to_abi_bytes(&proofs).unwrap();
+         
+         println!("proof byte:{}", hex::encode(bytes));
+         println!("pi byte:{}", hex::encode(pi_bytes));
     }
 }
