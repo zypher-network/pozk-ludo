@@ -8,11 +8,11 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./IVerifier.sol";
 
 //contract LudoGameVerifier is Initializable, OwnableUpgradeable, ERC165, IVerifier {
-    contract LudoGameVerifier is Initializable, OwnableUpgradeable, ERC165 {
+contract LudoGameVerifier is Initializable, OwnableUpgradeable, ERC165 {
     // Scalar field size
-    uint256 constant r    = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
+    uint256 constant r = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
     // Base field size
-    uint256 constant q   = 21888242871839275222246405745257275088696311157297823662689037894645226208583;
+    uint256 constant q = 21888242871839275222246405745257275088696311157297823662689037894645226208583;
 
     // Verification Key data
     uint256 constant alphax = 8438842903283024337627335834852503501471075569961518161756143697280213113698;
@@ -33,18 +33,18 @@ import "./IVerifier.sol";
     uint256 constant IC0x = 1515691947786173572046155870038527259659037541365618233932778862804299994319;
     uint256 constant IC0y = 21049717168302976248817916780105605238823937976660721093473639552263368328090;
 
-        uint256 constant IC1x = 14630052775128445628922931974704065290133575298337112620791550795273345296971;
+    uint256 constant IC1x = 14630052775128445628922931974704065290133575298337112620791550795273345296971;
     uint256 constant IC1y = 18111842430233042823457370737337702457005006018763242713811979357819874996740;
 
-           uint256 constant IC2x = 12663963462392095204150772850983655974635981362133905573258247331985438071027;
+    uint256 constant IC2x = 12663963462392095204150772850983655974635981362133905573258247331985438071027;
     uint256 constant IC2y = 13967010698294143608412153928404158438749438538634676395864629485068609975812;
 
-   // Memory data
+    // Memory data
     uint16 constant pVk = 0;
     uint16 constant pPairing = 128;
     uint16 constant pLastMem = 896;
 
- // _proof = [A, B ,C]
+    // _proof = [A, B ,C]
     function verifyProof(uint256[8] calldata _proof, uint256[2] calldata _pubSignals) public view returns (bool) {
         assembly {
             function checkField(v) {
@@ -147,7 +147,6 @@ import "./IVerifier.sol";
 
             checkField(calldataload(add(_pubSignals, 32)))
 
-
             // Validate all evaluations
             let isValid := checkPairing(_proof, _pubSignals, pMem)
 
@@ -155,4 +154,4 @@ import "./IVerifier.sol";
             return(0, 0x20)
         }
     }
-}    
+}
